@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 from http.server import SimpleHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import quote
 import json
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -58,7 +59,7 @@ class AlbumHandler(SimpleHTTPRequestHandler):
         return {
             "name": item.name,
             "path": relative_path,
-            "url": f"/{root.name}/{relative_path}",
+            "url": f"/{root.name}/{quote(relative_path)}",
             "kind": kind,
         }
 

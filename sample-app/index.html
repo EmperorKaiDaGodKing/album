@@ -59,7 +59,7 @@
         overflow: hidden;
         background: #fafbff;
       }
-      .media-item a {
+      .media-link {
         color: inherit;
         text-decoration: none;
       }
@@ -92,6 +92,12 @@
         color: var(--muted);
         font-size: 0.92rem;
         margin-top: 4px;
+      }
+      .media-copy .media-link {
+        display: inline-block;
+        margin-top: 10px;
+        color: #3254d3;
+        font-weight: 600;
       }
       code {
         background: #eef2ff;
@@ -137,31 +143,31 @@
         const article = document.createElement("article");
         article.className = "media-item";
 
-        const link = document.createElement("a");
-        link.href = item.url;
-        link.target = "_blank";
-        link.rel = "noreferrer";
-        article.appendChild(link);
-
         if (item.kind === "image") {
+          const link = document.createElement("a");
+          link.className = "media-link";
+          link.href = item.url;
+          link.target = "_blank";
+          link.rel = "noreferrer noopener";
           const image = document.createElement("img");
           image.className = "media-preview";
           image.src = item.url;
           image.alt = item.name;
-          loading = "lazy";
+          image.loading = "lazy";
           link.appendChild(image);
+          article.appendChild(link);
         } else if (item.kind === "video") {
           const video = document.createElement("video");
           video.className = "media-preview";
           video.src = item.url;
           video.controls = true;
           video.preload = "metadata";
-          link.appendChild(video);
+          article.appendChild(video);
         } else {
           const fallback = document.createElement("div");
           fallback.className = "media-fallback";
           fallback.textContent = "Open file";
-          link.appendChild(fallback);
+          article.appendChild(fallback);
         }
 
         const copy = document.createElement("div");
@@ -172,7 +178,20 @@
         path.textContent = item.path;
         copy.appendChild(title);
         copy.appendChild(path);
-        link.appendChild(copy);
+        const openLink = document.createElement("a");
+        openLink.className = "media-link";
+        openLink.href = item.url;
+        openLink.target = "_blank";
+        openLink.rel = "noreferrer noopener";
+        if (item.kind === "image") {
+          openLink.textContent = "Open photo";
+        } else if (item.kind === "video") {
+          openLink.textContent = "Open video";
+        } else {
+          openLink.textContent = "Open file";
+        }
+        copy.appendChild(openLink);
+        article.appendChild(copy);
 
         return article;
       }
