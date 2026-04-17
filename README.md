@@ -1,10 +1,16 @@
 # album
 
-Simple sample app with two shareable folders:
+Simple local album sample with two shareable folders:
 - `sample-app/photos`
 - `sample-app/videos`
 
-The sample server listens on `0.0.0.0:8000`, so iOS and Android devices on the same Wi-Fi can connect.
+The sample server listens on `0.0.0.0:8000`, so iOS and Android devices on the same Wi-Fi can connect and browse the album.
+
+## What this app is for
+- Drop photos into `sample-app/photos`
+- Drop videos into `sample-app/videos`
+- Run the Python server
+- Open the page on your phone or computer to view the media as a simple local gallery
 
 ## One step at a time (iPad friendly)
 1. Open this repo on GitHub in Microsoft Edge.
