@@ -29,6 +29,8 @@ class AlbumHandler(SimpleHTTPRequestHandler):
         super().do_GET()
 
     def _json_list(self, directory: Path):
+        if not directory.exists():
+            directory.mkdir(parents=True, exist_ok=True)
         items = [
             item.name
             for item in sorted(directory.iterdir())
