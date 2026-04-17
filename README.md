@@ -17,3 +17,5 @@ The sample server listens on `0.0.0.0:8000`, so iOS and Android devices on the s
 ## Notes
 - This repo structure can be edited fully from iPad on GitHub.
 - Running the server requires a device that can execute Python (computer or cloud runtime).
+- `0.0.0.0` and open CORS are set for local iOS/Android testing only. Do not use these settings in production.
+- If you only need local testing on one device, use `127.0.0.1` instead of `0.0.0.0`.

@@ -45,6 +45,7 @@ class AlbumHandler(SimpleHTTPRequestHandler):
 
 
 def main():
+    # Local testing defaults: 0.0.0.0 + open CORS allow iOS/Android devices on same network.
     host = "0.0.0.0"
     port = 8000
     server = ThreadingHTTPServer((host, port), AlbumHandler)

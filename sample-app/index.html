@@ -33,11 +33,23 @@
           const response = await fetch(api);
           const data = await response.json();
           const items = data.items || [];
-          list.innerHTML = items.length
-            ? items.map((name) => `<li>${name}</li>`).join("")
-            : "<li>Folder is ready. Add files to this folder.</li>";
+          list.innerHTML = "";
+          if (items.length) {
+            items.forEach((name) => {
+              const li = document.createElement("li");
+              li.textContent = name;
+              list.appendChild(li);
+            });
+          } else {
+            const li = document.createElement("li");
+            li.textContent = "Folder is ready. Add files to this folder.";
+            list.appendChild(li);
+          }
         } catch {
-          list.innerHTML = "<li>Could not connect to server.</li>";
+          list.innerHTML = "";
+          const li = document.createElement("li");
+          li.textContent = "Could not connect to server.";
+          list.appendChild(li);
         }
       }
 
