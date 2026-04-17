@@ -48,7 +48,7 @@
         } catch {
           list.innerHTML = "";
           const li = document.createElement("li");
-          li.textContent = "Could not connect to server.";
+          li.textContent = "Could not connect to server. Make sure Python server is running on this address.";
           list.appendChild(li);
         }
       }
