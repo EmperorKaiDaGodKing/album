@@ -6,6 +6,8 @@ import json
 BASE_DIR = Path(__file__).resolve().parent
 PHOTOS_DIR = BASE_DIR / "photos"
 VIDEOS_DIR = BASE_DIR / "videos"
+IMAGE_EXTENSIONS = {".avif", ".gif", ".heic", ".heif", ".jpeg", ".jpg", ".png", ".webp"}
+VIDEO_EXTENSIONS = {".m4v", ".mov", ".mp4", ".mpeg", ".mpg", ".webm"}
 
 
 class AlbumHandler(SimpleHTTPRequestHandler):
@@ -32,8 +34,8 @@ class AlbumHandler(SimpleHTTPRequestHandler):
         if not directory.exists():
             directory.mkdir(parents=True, exist_ok=True)
         items = [
-            item.name
-            for item in sorted(directory.iterdir())
+            self._serialize_media_item(directory, item)
+            for item in sorted(directory.rglob("*"))
             if item.is_file() and not item.name.startswith(".")
         ]
         body = json.dumps({"items": items}).encode("utf-8")
@@ -42,6 +44,23 @@ class AlbumHandler(SimpleHTTPRequestHandler):
         self.send_header("Content-Length", str(len(body)))
         self.end_headers()
         self.wfile.write(body)
+
+    def _serialize_media_item(self, root: Path, item: Path):
+        relative_path = item.relative_to(root).as_posix()
+        suffix = item.suffix.lower()
+        if suffix in IMAGE_EXTENSIONS:
+            kind = "image"
+        elif suffix in VIDEO_EXTENSIONS:
+            kind = "video"
+        else:
+            kind = "file"
+
+        return {
+            "name": item.name,
+            "path": relative_path,
+            "url": f"/{root.name}/{relative_path}",
+            "kind": kind,
+        }
 
 
 def main():

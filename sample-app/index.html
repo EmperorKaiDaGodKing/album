@@ -5,56 +5,199 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Album Sample App</title>
     <style>
-      body { font-family: Arial, sans-serif; margin: 24px; line-height: 1.45; }
+      :root {
+        color-scheme: light;
+        --border: #d9d9df;
+        --text: #1d2433;
+        --muted: #5f6b85;
+        --card: #ffffff;
+        --background: #f4f6fb;
+      }
+      * { box-sizing: border-box; }
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        line-height: 1.45;
+        color: var(--text);
+        background: var(--background);
+      }
+      main {
+        width: min(1100px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 24px 0 40px;
+      }
       h1 { margin-bottom: 8px; }
-      .card { border: 1px solid #ddd; border-radius: 10px; padding: 14px; margin-top: 12px; }
-      code { background: #f5f5f5; padding: 2px 6px; border-radius: 6px; }
-      ul { margin-top: 8px; }
+      p { margin-top: 0; }
+      .hero,
+      .card {
+        border: 1px solid var(--border);
+        border-radius: 18px;
+        padding: 18px;
+        background: var(--card);
+      }
+      .hero {
+        margin-bottom: 16px;
+      }
+      .hero p:last-child,
+      .empty,
+      .error {
+        color: var(--muted);
+      }
+      .sections {
+        display: grid;
+        gap: 16px;
+      }
+      .media-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+        gap: 12px;
+        margin-top: 12px;
+      }
+      .media-item {
+        border: 1px solid var(--border);
+        border-radius: 14px;
+        overflow: hidden;
+        background: #fafbff;
+      }
+      .media-item a {
+        color: inherit;
+        text-decoration: none;
+      }
+      .media-preview {
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        display: block;
+        background: #e8ecf8;
+        object-fit: cover;
+      }
+      .media-fallback {
+        width: 100%;
+        aspect-ratio: 4 / 3;
+        display: grid;
+        place-items: center;
+        padding: 16px;
+        text-align: center;
+        color: var(--muted);
+        background: #eef2ff;
+      }
+      .media-copy {
+        padding: 12px;
+      }
+      .media-copy strong,
+      .media-copy span {
+        display: block;
+        word-break: break-word;
+      }
+      .media-copy span {
+        color: var(--muted);
+        font-size: 0.92rem;
+        margin-top: 4px;
+      }
+      code {
+        background: #eef2ff;
+        padding: 2px 6px;
+        border-radius: 6px;
+      }
+      @media (max-width: 640px) {
+        main {
+          width: min(100% - 20px, 1100px);
+          padding-top: 16px;
+        }
+        .hero,
+        .card {
+          padding: 14px;
+          border-radius: 14px;
+        }
+      }
     </style>
   </head>
   <body>
-    <h1>Album Sample App</h1>
-    <p>This sample has two shareable folders: <code>photos</code> and <code>videos</code>.</p>
+    <main>
+      <section class="hero">
+        <h1>Album Sample App</h1>
+        <p>Use this as a private local album viewer for media stored in <code>photos</code> and <code>videos</code>.</p>
+        <p>Add files to those folders, start the Python server, and open this page on your phone or computer to browse the album.</p>
+      </section>
 
-    <div class="card">
-      <h2>Photos</h2>
-      <ul id="photos"><li>Loading...</li></ul>
-    </div>
+      <div class="sections">
+        <section class="card">
+          <h2>Photos</h2>
+          <div id="photos" class="media-grid"><p class="empty">Loading...</p></div>
+        </section>
 
-    <div class="card">
-      <h2>Videos</h2>
-      <ul id="videos"><li>Loading...</li></ul>
-    </div>
+        <section class="card">
+          <h2>Videos</h2>
+          <div id="videos" class="media-grid"><p class="empty">Loading...</p></div>
+        </section>
+      </div>
+    </main>
 
     <script>
-      async function loadList(api, elementId) {
-        const list = document.getElementById(elementId);
+      function createMediaItem(item) {
+        const article = document.createElement("article");
+        article.className = "media-item";
+
+        const link = document.createElement("a");
+        link.href = item.url;
+        link.target = "_blank";
+        link.rel = "noreferrer";
+        article.appendChild(link);
+
+        if (item.kind === "image") {
+          const image = document.createElement("img");
+          image.className = "media-preview";
+          image.src = item.url;
+          image.alt = item.name;
+          loading = "lazy";
+          link.appendChild(image);
+        } else if (item.kind === "video") {
+          const video = document.createElement("video");
+          video.className = "media-preview";
+          video.src = item.url;
+          video.controls = true;
+          video.preload = "metadata";
+          link.appendChild(video);
+        } else {
+          const fallback = document.createElement("div");
+          fallback.className = "media-fallback";
+          fallback.textContent = "Open file";
+          link.appendChild(fallback);
+        }
+
+        const copy = document.createElement("div");
+        copy.className = "media-copy";
+        const title = document.createElement("strong");
+        title.textContent = item.name;
+        const path = document.createElement("span");
+        path.textContent = item.path;
+        copy.appendChild(title);
+        copy.appendChild(path);
+        link.appendChild(copy);
+
+        return article;
+      }
+
+      async function loadList(api, elementId, emptyMessage) {
+        const container = document.getElementById(elementId);
         try {
           const response = await fetch(api);
           const data = await response.json();
           const items = data.items || [];
-          list.innerHTML = "";
+          container.innerHTML = "";
           if (items.length) {
-            items.forEach((name) => {
-              const li = document.createElement("li");
-              li.textContent = name;
-              list.appendChild(li);
+            items.forEach((item) => {
+              container.appendChild(createMediaItem(item));
             });
           } else {
-            const li = document.createElement("li");
-            li.textContent = "Folder is ready. Add files to this folder.";
-            list.appendChild(li);
+            container.innerHTML = `<p class="empty">${emptyMessage}</p>`;
           }
         } catch {
-          list.innerHTML = "";
-          const li = document.createElement("li");
-          li.textContent = "Could not connect to server. Make sure Python server is running on this address.";
-          list.appendChild(li);
+          container.innerHTML = '<p class="error">Could not connect to server. Make sure the Python server is running on this address.</p>';
         }
       }
 
-      loadList('/api/photos', 'photos');
-      loadList('/api/videos', 'videos');
+      loadList('/api/photos', 'photos', 'Photo folder is ready. Add files to this folder.');
+      loadList('/api/videos', 'videos', 'Video folder is ready. Add files to this folder.');
     </script>
   </body>
 </html>
